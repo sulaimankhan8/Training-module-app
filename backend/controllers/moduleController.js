@@ -14,20 +14,30 @@ exports.createModule = async (req, res) => {
     pages,
   });
 
-  const createdModule = await module.save();
-  res.status(201).json(createdModule);
+  try {
+    const createdModule = await module.save();
+    res.status(201).json(createdModule);
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to create module' });
+  }
 };
 
 exports.getModules = async (req, res) => {
-  const modules = await Module.find({});
-  res.json(modules);
+  try {
+    const modules = await Module.find({});
+    res.json(modules);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch modules' });
+  }
 };
 
 exports.uploadVideo = async (req, res) => {
-  const file = req.files.video;
-  const result = await cloudinary.uploader.upload(file.tempFilePath, {
-    resource_type: 'video',
-  });
+  if (!req.files || !req.files.video) return res.status(400).json({ message: 'No video file uploaded' });
 
-  res.json({ url: result.secure_url });
+  try {
+    const result = await cloudinary.uploader.upload(req.files.video.tempFilePath, { resource_type: 'video' });
+    res.json({ url: result.secure_url });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to upload video' });
+  }
 };

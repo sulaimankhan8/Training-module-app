@@ -1,98 +1,107 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import VideoUpload from './VideoUpload';
+import { useNavigate } from 'react-router-dom';
 
 const CreateModulePage = () => {
-
+  const [title, setTitle] = useState('');
   const [pages, setPages] = useState([{ title: '', content: '', videoUrl: '' }]);
-  const [moduleTitle, setModuleTitle] = useState('');
+  const [video, setVideo] = useState(null);
+  const navigate = useNavigate();
 
-  const handlePageChange = (index, field, value) => {
-    const newPages = [...pages];
-    newPages[index][field] = value;
-    setPages(newPages);
-  };
-
-  const addPage = () => {
+  const handleAddPage = () => {
     setPages([...pages, { title: '', content: '', videoUrl: '' }]);
   };
 
-  const removePage = (index) => {
-    const newPages = pages.filter((_, i) => i !== index);
+  const handlePageChange = (index, e) => {
+    const newPages = [...pages];
+    newPages[index][e.target.name] = e.target.value;
     setPages(newPages);
   };
 
-  const handleVideoUpload = async (index, videoUrl) => {
-    const newPages = [...pages];
-    newPages[index].videoUrl = videoUrl;
-    setPages(newPages);
+  const handleVideoChange = (e) => {
+    setVideo(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post('/api/modules', { title: moduleTitle, pages }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('userToken')}` }
-      });
-      // Handle success, e.g., redirect to the home page or show a success message
-    } catch (error) {
-      console.error('Failed to create module');
+    
+    let videoUrl = '';
+    if (video) {
+      const formData = new FormData();
+      formData.append('video', video);
+      
+      const uploadRes = await axios.post('/api/modules/upload', formData);
+      videoUrl = uploadRes.data.url;
     }
+
+    const moduleData = { title, pages: pages.map(page => ({ ...page, videoUrl })) };
+    
+    await axios.post('/api/modules', moduleData);
+    navigate('/confirmation');
   };
 
   return (
-    <div className="container mx-auto p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-center">Create New Module</h1>
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-        <input
-          type="text"
-          value={moduleTitle}
-          onChange={(e) => setModuleTitle(e.target.value)}
-          placeholder="Module Title"
-          className="border border-gray-300 p-2 rounded w-full mb-4"
-        />
+    <div className="p-4">
+      <h1 className="text-xl font-bold mb-4">Create New Module</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700">Module Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+        
         {pages.map((page, index) => (
-          <div key={index} className="bg-white p-4 mb-4 shadow-md rounded-md">
-            <div className="flex">
-              <div className="flex-1 pr-4">
-                <input
-                  type="text"
-                  value={page.title}
-                  onChange={(e) => handlePageChange(index, 'title', e.target.value)}
-                  placeholder="Page Title"
-                  className="border border-gray-300 p-2 rounded w-full mb-2"
-                />
-                <textarea
-                  value={page.content}
-                  onChange={(e) => handlePageChange(index, 'content', e.target.value)}
-                  placeholder="Page Content"
-                  className="border border-gray-300 p-2 rounded w-full mb-2"
-                />
-              </div>
-              <div className="flex-1 pl-4">
-                <VideoUpload onUpload={(videoUrl) => handleVideoUpload(index, videoUrl)} />
-                {/* Progress tracker (to be implemented based on video progress) */}
-              </div>
+          <div key={index} className="mb-4">
+            <h2 className="text-lg font-semibold">Page {index + 1}</h2>
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <input
+                type="text"
+                name="title"
+                value={page.title}
+                onChange={(e) => handlePageChange(index, e)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                required
+              />
             </div>
-            <button
-              type="button"
-              onClick={() => removePage(index)}
-              className="bg-red-500 text-white py-2 px-4 rounded mt-2 hover:bg-red-600 transition"
-            >
-              Remove Page
-            </button>
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700">Content</label>
+              <textarea
+                name="content"
+                value={page.content}
+                onChange={(e) => handlePageChange(index, e)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
+                rows="4"
+                required
+              />
+            </div>
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700">Video Upload</label>
+              <input
+                type="file"
+                onChange={handleVideoChange}
+                className="mt-1 block w-full"
+              />
+            </div>
           </div>
         ))}
+        
         <button
           type="button"
-          onClick={addPage}
-          className="bg-green-500 text-white py-2 px-4 rounded mb-4 hover:bg-green-600 transition"
+          onClick={handleAddPage}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md"
         >
           Add Page
         </button>
+        
         <button
           type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+          className="px-4 py-2 bg-green-500 text-white rounded-md"
         >
           Create Module
         </button>

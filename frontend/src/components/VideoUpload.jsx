@@ -3,6 +3,7 @@ import axios from 'axios';
 
 const VideoUpload = ({ onUpload }) => {
   const [videoFile, setVideoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
     setVideoFile(e.target.files[0]);
@@ -11,6 +12,7 @@ const VideoUpload = ({ onUpload }) => {
   const handleUpload = async () => {
     if (!videoFile) return;
 
+    setUploading(true);
     const formData = new FormData();
     formData.append('video', videoFile);
 
@@ -20,15 +22,26 @@ const VideoUpload = ({ onUpload }) => {
       });
       onUpload(data.url);
     } catch (error) {
-      console.error('Failed to upload video');
+      console.error('Failed to upload video', error);
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} accept="video/*" className="border border-gray-300 p-2 rounded mb-4" />
-      <button onClick={handleUpload} className="bg-blue-500 text-white py-2 px-4 rounded">
-        Upload Video
+    <div className="mb-4">
+      <input
+        type="file"
+        onChange={handleFileChange}
+        accept="video/*"
+        className="border border-gray-300 p-2 rounded mb-2"
+      />
+      <button
+        onClick={handleUpload}
+        className="bg-blue-500 text-white py-2 px-4 rounded"
+        disabled={uploading}
+      >
+        {uploading ? 'Uploading...' : 'Upload Video'}
       </button>
     </div>
   );

@@ -2,22 +2,22 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
-import ModulePage from './components/ModulePage';
 import CreateModulePage from './components/CreateModulePage';
+import ModulePage from './components/ModulePage';
+import ConfirmationPage from './components/ConfirmationPage';
 
-function App() {
+const App = () => {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/module/:id" element={<ModulePage />} />
-          <Route path="/create-module" element={<CreateModulePage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/create-module" element={<CreateModulePage />} />
+        <Route path="/modules/:id" element={<ModulePage />} />
+        <Route path="/confirmation" element={<ConfirmationPage />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;

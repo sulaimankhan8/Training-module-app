@@ -1,52 +1,39 @@
-import React, { useEffect, useRef } from 'react';
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
-import axios from 'axios';
+import React, { useRef, useEffect, useState } from 'react';
 
-const VideoPlayer = ({ videoUrl, moduleId, pageId, onEnd }) => {
+const VideoPlayer = ({ url, onProgressUpdate }) => {
   const videoRef = useRef(null);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const player = videojs(videoRef.current, {
-      controls: true,
-      autoplay: false,
-      preload: 'auto',
-      controlBar: {
-        progressControl: {
-          seekBar: {
-            mouseTimeDisplay: false,
-          },
-        },
-        currentTimeDisplay: false,
-        timeDivider: false,
-        durationDisplay: false,
-        remainingTimeDisplay: false,
-      },
-    });
+    const videoElement = videoRef.current;
 
-    player.src({ type: 'video/mp4', src: videoUrl });
+    const handleTimeUpdate = () => {
+      const duration = videoElement.duration;
+      const currentTime = videoElement.currentTime;
+      const watchedDuration = Math.floor(currentTime);
+      setProgress(watchedDuration);
+      onProgressUpdate(watchedDuration);
+    };
 
-    player.on('ended', async () => {
-      await axios.post('/api/users/progress', {
-        moduleId,
-        pageId,
-        watchedDuration: player.currentTime(),
-      });
-      onEnd();
-    });
+    videoElement.addEventListener('timeupdate', handleTimeUpdate);
 
     return () => {
-      if (player) {
-        player.dispose();
-      }
+      videoElement.removeEventListener('timeupdate', handleTimeUpdate);
     };
-  }, [videoUrl, moduleId, pageId, onEnd]);
+  }, [onProgressUpdate]);
 
   return (
-    <div>
-      <div data-vjs-player>
-        <video ref={videoRef} className="video-js vjs-big-play-centered" />
-      </div>
+    <div className="mb-4">
+      <video
+        ref={videoRef}
+        src={url}
+        controls
+        className="w-full h-auto"
+        onClick={() => videoRef.current.play()}
+      >
+        Your browser does not support the video tag.
+      </video>
+      <p className="text-sm text-gray-600">Current Progress: {progress} seconds</p>
     </div>
   );
 };

@@ -1,27 +1,14 @@
 const mongoose = require('mongoose');
 
 const pageSchema = mongoose.Schema({
-  title: 
-  { 
-    type: String,
-     required: true 
-    },
-  content: 
-  { type: String,
-     required: true 
-    },
-  videoUrl:
-   { type: String,
-     required: true },
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  videoUrl: { type: String, required: true },
 });
 
 const moduleSchema = mongoose.Schema(
   {
-    title: 
-    { 
-        type: String,
-         required: true
-         },
+    title: { type: String, required: true },
     pages: [pageSchema],
   },
   {

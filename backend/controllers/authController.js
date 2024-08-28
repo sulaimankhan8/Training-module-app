@@ -5,7 +5,6 @@ const bcrypt = require('bcryptjs');
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
-    
   });
 };
 
@@ -14,8 +13,7 @@ exports.registerUser = async (req, res) => {
   const userExists = await User.findOne({ username });
 
   if (userExists) {
-    res.status(400).json({ message: 'User already exists' });
-    return;
+    return res.status(400).json({ message: 'User already exists' });
   }
 
   const salt = await bcrypt.genSalt(10);
