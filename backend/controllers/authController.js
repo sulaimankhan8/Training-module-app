@@ -13,7 +13,8 @@ exports.registerUser = async (req, res) => {
   const userExists = await User.findOne({ username });
 
   if (userExists) {
-    return res.status(400).json({ message: 'User already exists' });
+    res.status(400).json({ message: 'User already exists' });
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);

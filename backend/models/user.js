@@ -10,16 +10,13 @@ const moduleProgressSchema = mongoose.Schema({
   videos: [videoProgressSchema],
 });
 
-const userSchema = mongoose.Schema(
-  {
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    progress: [moduleProgressSchema],
-  },
-  {
-    timestamps: true,
-  }
-);
+const userSchema = mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  progress: [moduleProgressSchema],
+}, {
+  timestamps: true,
+});
 
 const User = mongoose.model('User', userSchema);
 

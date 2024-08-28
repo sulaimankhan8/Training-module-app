@@ -2,43 +2,41 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const VideoUpload = ({ onUpload }) => {
-  const [videoFile, setVideoFile] = useState(null);
+  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e) => {
-    setVideoFile(e.target.files[0]);
+    setFile(e.target.files[0]);
   };
 
   const handleUpload = async () => {
-    if (!videoFile) return;
+    if (!file) return;
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('video', videoFile);
+    formData.append('video', file);
 
     try {
-      const { data } = await axios.post('/api/modules/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      onUpload(data.url);
+      const response = await axios.post('/api/modules/upload', formData);
+      onUpload(response.data.url);
+      setUploading(false);
     } catch (error) {
-      console.error('Failed to upload video', error);
-    } finally {
+      console.error('Error uploading video:', error);
       setUploading(false);
     }
   };
 
   return (
-    <div className="mb-4">
+    <div>
       <input
         type="file"
-        onChange={handleFileChange}
         accept="video/*"
-        className="border border-gray-300 p-2 rounded mb-2"
+        onChange={handleFileChange}
+        className="border border-gray-300 p-2 rounded mb-2 w-full"
       />
       <button
         onClick={handleUpload}
-        className="bg-blue-500 text-white py-2 px-4 rounded"
+        className={`bg-blue-500 text-white py-2 px-4 rounded ${uploading ? 'opacity-50' : ''}`}
         disabled={uploading}
       >
         {uploading ? 'Uploading...' : 'Upload Video'}

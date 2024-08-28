@@ -6,15 +6,12 @@ const pageSchema = mongoose.Schema({
   videoUrl: { type: String, required: true },
 });
 
-const moduleSchema = mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    pages: [pageSchema],
-  },
-  {
-    timestamps: true,
-  }
-);
+const moduleSchema = mongoose.Schema({
+  title: { type: String, required: true },
+  pages: [pageSchema],
+}, {
+  timestamps: true,
+});
 
 const Module = mongoose.model('Module', moduleSchema);
 

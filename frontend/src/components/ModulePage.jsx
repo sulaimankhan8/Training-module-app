@@ -1,52 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import VideoPlayer from './VideoPlayer';
-import ProgressTracker from './ProgressTracker';
+import ProgressBar from './ProgressBar';
 
-const ModulePage = () => {
-  const { id } = useParams();
+const ModulePage = ({ match }) => {
   const [module, setModule] = useState(null);
-  const [progress, setProgress] = useState({});
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const fetchModule = async () => {
-      const { data } = await axios.get(`/api/modules/${id}`);
-      setModule(data);
+      try {
+        const response = await axios.get(`/api/modules/${match.params.id}`);
+        setModule(response.data);
+      } catch (error) {
+        console.error('Error fetching module:', error);
+      }
     };
 
     fetchModule();
-  }, [id]);
+  }, [match.params.id]);
 
-  const handleProgressUpdate = async (pageId, watchedDuration) => {
-    await axios.post('/api/users/progress', {
-      userId: localStorage.getItem('userId'),
-      moduleId: id,
-      pageId,
-      watchedDuration,
-    });
-    setProgress((prevProgress) => ({
-      ...prevProgress,
-      [pageId]: watchedDuration,
-    }));
+  const handleVideoProgress = (currentTime, duration) => {
+    setProgress((currentTime / duration) * 100);
   };
 
-  if (!module) return <p>Loading...</p>;
+  const handleVideoEnd = () => {
+    if (currentPageIndex < (module.pages.length - 1)) {
+      setCurrentPageIndex(currentPageIndex + 1);
+      setProgress(0);
+    }
+  };
+
+  if (!module) return <div>Loading...</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">{module.title}</h1>
-      {module.pages.map((page, index) => (
-        <div key={index} className="mb-4">
-          <h2 className="text-lg font-semibold">{page.title}</h2>
-          <p>{page.content}</p>
-          <VideoPlayer
-            url={page.videoUrl}
-            onProgressUpdate={(watchedDuration) => handleProgressUpdate(page._id, watchedDuration)}
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">{module.title}</h1>
+      <div className="flex">
+        <div className="w-1/2 p-4">
+          <h2 className="text-2xl font-semibold mb-2">{module.pages[currentPageIndex].title}</h2>
+          <p className="mb-4">{module.pages[currentPageIndex].content}</p>
+          <video
+            controls
+            onTimeUpdate={(e) => handleVideoProgress(e.target.currentTime, e.target.duration)}
+            onEnded={handleVideoEnd}
+            className="w-full"
+            src={module.pages[currentPageIndex].videoUrl}
           />
-          <ProgressTracker watchedDuration={progress[page._id] || 0} />
         </div>
-      ))}
+        <div className="w-1/2 p-4">
+          <ProgressBar progress={progress} />
+        </div>
+      </div>
     </div>
   );
 };
