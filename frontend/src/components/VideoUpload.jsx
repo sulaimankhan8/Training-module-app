@@ -26,7 +26,7 @@ const VideoUpload = ({ onUpload }) => {
 
   return (
     <div>
-            <input type="file" onChange={handleFileChange} accept="video/*" className="border border-gray-300 p-2 rounded mb-4" />
+      <input type="file" onChange={handleFileChange} accept="video/*" className="border border-gray-300 p-2 rounded mb-4" />
       <button onClick={handleUpload} className="bg-blue-500 text-white py-2 px-4 rounded">
         Upload Video
       </button>
